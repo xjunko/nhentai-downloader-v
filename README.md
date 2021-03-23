@@ -3,12 +3,12 @@ NHentai downloader in vlang but without concurency so its slow :(
 
 
 ## How to use
-* Compile the code if you havent with
+* Compile the code if you havent with:
 ```
 Example: v nhentai.v
 ```
 
-* Usage
+* Usage:
 ```
 Example: nhentai 177013
 ```

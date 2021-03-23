@@ -31,7 +31,7 @@ fn (mut d Doujin) from_code(code string) &Doujin {
 	if 'content' !in meta.attributes {
 		panic('Failed to find meta!')
 	}
-	d.cdn_code = (meta.attributes['content']).split('/')[4] // would be could if i can just [-2] instead of [4]
+	d.cdn_code = (meta.attributes['content']).split('/')[4] // would be cool if i can just [-2] instead of [4]
 
 	// get pages count
 	d.pages = d.parser.get_tag_by_attribute_value('class', 'thumb-container').len
