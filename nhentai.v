@@ -44,8 +44,8 @@ fn (mut d Doujin) from_code(code string) &Doujin {
 	// metadata stuff
 	d.title = d.parser.get_tag_by_attribute_value('class', 'title')[0].text()
 
-	print('Doujin name: ${d.title}')
 	println('Done parsing')
+	println('Doujin name: ${d.title}')
 
 	return d
 }
