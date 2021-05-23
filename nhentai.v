@@ -57,7 +57,7 @@ fn (mut d NHentai) from_code(code string) Doujin {
 	resp := json.decode(Doujin, resp_raw.text) or {panic('Failed to decode json!: $err')}
 
 	println('Doujin id: $resp.id')
-	println('Doujin name: $resp.title["pretty"] | $resp.pages pages')
+	println('Doujin name: ${resp.title["pretty"]} | $resp.pages pages')
 
 	return resp
 }
