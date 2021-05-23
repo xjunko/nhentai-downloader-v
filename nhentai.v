@@ -32,7 +32,7 @@ fn (mut d Doujin) download_doujin() {
 	
 	for i, t in threads {
 		time.sleep(
-			rand.f64_in_range(1, 5) * time.second
+			rand.f64_in_range(4, 10) * time.second
 			)
 		println('#$i: Starting!')
 		t.wait() or {
