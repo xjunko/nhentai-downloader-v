@@ -1,4 +1,5 @@
 import os
+import time
 import x.json2
 import net.http
 
@@ -26,8 +27,16 @@ pub fn (mut d Doujin) from_json(f json2.Any) {
 }
 
 
+fn download_loop(url string, path string, i int) {
+	time.sleep((i*100) * time.millisecond)
+	http.download_file(url, path) or {
+		println('> Download loop failed: restarting...')
+		download_loop(url, path, i)
+	}
+}
+
 fn (mut d Doujin) download_doujin() {
-	mut threads := []thread ?{}
+	mut threads := []thread{}
 
 	// Check if doujin folder exists
 	if !os.exists('downloads/${d.id}/') {
@@ -45,17 +54,16 @@ fn (mut d Doujin) download_doujin() {
 			else {'jpg'}
 		}
 
-		threads << go http.download_file(
+		threads << go download_loop	(
 			'$d.cdn_url/$d.media_id/${i+1}.$format',
-			'downloads/$d.id/${i+1}.$format'
+			'downloads/$d.id/${i+1}.$format',
+			i
 			)
 	}
 
 	for i, task in threads {
 		println('Starting page #${i+1}')
-		task.wait() or {
-			println('Page #${i+1} failed: $err')
-		}
+		task.wait()
 		println('Finished page #${i+1}')
 	}
 
@@ -116,7 +124,9 @@ fn main() {
 		return
 	}
 
+	sw := time.new_stopwatch({})
 	// Download; very broken atm lol
 	doujin.download_doujin()
+	println('Downloading took: ${sw.elapsed().seconds()}s')
 	
 }
