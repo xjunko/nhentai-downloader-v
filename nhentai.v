@@ -30,7 +30,7 @@ pub fn (mut d Doujin) from_json(f json2.Any) {
 fn download_loop(url string, path string, i int) {
 	time.sleep((i*100) * time.millisecond)
 	http.download_file(url, path) or {
-		println('> Download loop failed: restarting...')
+		println('> Page #$i download failed: restarting...')
 		download_loop(url, path, i)
 	}
 }
