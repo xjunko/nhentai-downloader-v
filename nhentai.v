@@ -75,7 +75,7 @@ fn (mut d NHentai) from_code(code string) ?Doujin {
 	}
 
 	if resp_raw.status_code != 200 {
-		return error('Failed to get doujin!: status_code != 200')
+		return error('Status code is not 200')
 	}
 
 	resp := json2.decode<Doujin>(resp_raw.text) or {
@@ -112,7 +112,7 @@ fn main() {
 
 	code := args[1]
 	mut doujin := NHentai{}.from_code(code) or {
-		println(err)
+		println('Failed to get Doujin: $err')
 		return
 	}
 
