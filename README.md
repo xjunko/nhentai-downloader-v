@@ -1,5 +1,5 @@
 # nhentai-vlang
-NHentai downloader in vlang but without concurency so its slow :(
+NHentai downloader in vlang but with concurency and its fucked so bad lmao
 
 [Compiled Release](https://github.com/FireRedz/nhentai-vlang/releases/latest)
 
@@ -15,6 +15,6 @@ Example: nhentai 177013
 ```
 
 ## It accepts
-* code - the legendary code for the legendary website
+* code - i mean... you should know it
 
 

@@ -1,112 +1,91 @@
-import net.http
-import net.html
 import os
+import json
+import time
+import rand
+import net.http
+
 
 struct Doujin {
-	base_url string = 'https://nhentai.net/g'
-	cdn_url string = 'https://i.nhentai.net/galleries'
-
 	mut:
-		code string
-		title string
-		pages_url []string
-
-		// internal
-		cdn_code string
-		pages int
-		raw_html http.Response
-		parser html.DocumentObjectModel
+		id int
+		media_id string
+		title map[string]string  // this took awhile to figure out lmao i forgot how V works
+		pages int [json: num_pages]
 }
 
-fn (mut d Doujin) from_code(code string) &Doujin {
-	//mut code := code_.str()[..code_.str().len-1] // for some reason int have a dot at the end
-	println('Doujin Code: ${code}')
 
-	d.code = code
-	d.raw_html = http.get('${d.base_url}/${d.code}/') or {panic('Request failed!')}
-	d.parser = html.parse(d.raw_html.text)
+fn (mut d Doujin) download_doujin() {
+	cdn_url := 'https://i.nhentai.net/galleries'
+	mut threads := []thread ?{}
 
-	// find the cdn code
-	meta := d.parser.get_tag_by_attribute_value('property', 'og:image')[0]
-	if 'content' !in meta.attributes {
-		panic('Failed to find meta!')
+	// Check if doujin folder exists
+	if !os.exists('downloads/${d.id.str()}/') {
+		os.mkdir('downloads/${d.id.str()}/') or {
+			println('Failed to create doujin folder: $err')
+		}
 	}
-	d.cdn_code = (meta.attributes['content']).split('/')[4] // would be cool if i can just [-2] instead of [4]
-
-	// get pages count
-	d.pages = d.parser.get_tag_by_attribute_value('class', 'thumb-container').len
 
 	for page in 1 .. d.pages + 1 {
-		//d.pages_url << d.cdn_url + d.cdn_code + '/' + page.str() + '.jpg' // not cool looking, does v have string format?
-		d.pages_url << '${d.cdn_url}/${d.cdn_code}/${page.str()}.jpg' // it does.
-	}
-
-	// metadata stuff
-	d.title = d.parser.get_tag_by_attribute_value('class', 'title')[0].text()
-
-	println('Done parsing')
-	println('Doujin name: ${d.title}')
-
-	return d
-}
-
-fn (d Doujin) download_pages() {
-	println('Downloading...')
-	println('Pages: ${d.pages_url.len}')
-
-	if d.pages_url.len == 0 {
-		println('uh idk man theres no pages to download so... bye?')
-		return
-	}
-
-	// make a folder for this doujin if havent
-	if !os.exists('downloads/${d.code}') {
-		os.mkdir('downloads/${d.code}') or {}
+		threads << go http.download_file('$cdn_url/$d.media_id/${page.str()}.jpg', 'downloads/${d.id.str()}/${page.str()}.jpg')
 	}
 
 	
-	for n, page in d.pages_url {
-		println('Downloading page: ${n+1} | Url: ${page}')
-		http.download_file(page, 'downloads/${d.code}/${n+1}.jpg') or {println('Failed to download page ${n+1}')}
-		println('Downloaded page: ${n+1}/${d.pages_url.len}')
+	for i, t in threads {
+		time.sleep(
+			rand.f64_in_range(1, 5) * time.second
+			)
+		println('#$i: Starting!')
+		t.wait() or {
+			println('#Thread $i Failed: $err')
+		}
+		println('#$i: Completed!')
 	}
 }
 
-fn main(){
+[heap]
+struct NHentai {
+	api_url string = 'https://nhentai.net/api/gallery'
+}
+
+fn (mut d NHentai) from_code(code string) Doujin {
+	println('> Doujin code: ${code}')
+
+	resp_raw := http.get(
+		'${d.api_url}/${code}'
+		) or {panic('Request failed: $err')}
+
+	resp := json.decode(Doujin, resp_raw.text) or {panic('Failed to decode json!: $err')}
+
+	println('Doujin id: $resp.id')
+	println('Doujin name: $resp.title["pretty"] | $resp.pages pages')
+
+	return resp
+}
+
+
+fn main() {
 	args := os.args.clone()
 
 	if args.len < 2 {
-		print('wheres the code retard')
-		print('\n')
-		print('\n')
-		print('args: \n')
-		print('* code: int - the fucking code for nhentai')
-		print('\n')
+		println('nHentai shit downloader')
+		println('error: wheres the code retard \n')
+		println('args:')
+		println('* code: int - the fucking code for nhentai')
 		return
+	}	
+
+	// Check download folder
+	if !os.exists('download') {
+		os.mkdir('downloads') or {
+			println('Failed to create download folder!: $err') // should never happen unless
+															   // some bullshit perms is fucking up the program
+		}
 	}
 
 	code := args[1]
-	doujin := Doujin{}.from_code(code)
+	mut doujin := NHentai{}.from_code(code)
 
-	// check download folder
-	if !os.exists('downloads') {
-		os.mkdir('downloads') or {} // i mean it shouldnt fail
-	}
+	// Download; very broken atm lol
+	doujin.download_doujin()
 	
-	// Download 
-	doujin.download_pages()
-
-
 }
-
-
-/*
-a := Doujin{}.from_code(177013)
-// try download?
-for n, page in a.pages_url {
-	http.download_file(page, '${n}.jpg') or {println('Failed to download page ${n}')}
-	println('Downloaded ${n}')	
-}
-*/
-
-
