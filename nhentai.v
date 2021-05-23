@@ -1,45 +1,64 @@
 import os
-import json
-import time
-import rand
+import x.json2
 import net.http
 
 
 struct Doujin {
+	cdn_url string = 'https://i.nhentai.net/galleries'
 	mut:
-		id int
+		id string
 		media_id string
-		title map[string]string  // this took awhile to figure out lmao i forgot how V works
-		pages int [json: num_pages]
+		title map[string]json2.Any
+		pages json2.Any
+}
+
+pub fn (mut d Doujin) from_json(f json2.Any) {
+	obj := f.as_map()
+	for key, value in obj {
+		match key {
+			'id' { d.id = value.str() }
+			'media_id' { d.media_id = value.str() }
+			'title' { d.title = value.as_map() }
+			'images' { d.pages = value.as_map()['pages'] }	
+			else {}
+		}
+	}
 }
 
 
 fn (mut d Doujin) download_doujin() {
-	cdn_url := 'https://i.nhentai.net/galleries'
 	mut threads := []thread ?{}
 
 	// Check if doujin folder exists
-	if !os.exists('downloads/${d.id.str()}/') {
-		os.mkdir('downloads/${d.id.str()}/') or {
+	if !os.exists('downloads/${d.id}/') {
+		os.mkdir('downloads/${d.id}/') or {
 			println('Failed to create doujin folder: $err')
 		}
 	}
 
-	for page in 1 .. d.pages + 1 {
-		threads << go http.download_file('$cdn_url/$d.media_id/${page.str()}.jpg', 'downloads/${d.id.str()}/${page.str()}.jpg')
+	for i, page_ in d.pages.arr() {
+		page := page_.as_map()
+		format := match page['t'].str() {
+			'j' { 'jpg' }
+			'p' { 'png' }
+			'g' { 'gif'}
+			else {'jpg'}
+		}
+
+		threads << go http.download_file(
+			'$d.cdn_url/$d.media_id/${i+1}.$format',
+			'downloads/$d.id/${i+1}.$format'
+			)
 	}
 
-	
-	for i, t in threads {
-		time.sleep(
-			rand.f64_in_range(4, 10) * time.second
-			)
-		println('#$i: Starting!')
-		t.wait() or {
-			println('#Thread $i Failed: $err')
+	for i, task in threads {
+		println('Starting page #$i')
+		task.wait() or {
+			println('Page #$i failed: $err')
 		}
-		println('#$i: Completed!')
+		println('Finished page #$i')
 	}
+
 }
 
 [heap]
@@ -54,10 +73,13 @@ fn (mut d NHentai) from_code(code string) Doujin {
 		'${d.api_url}/${code}'
 		) or {panic('Request failed: $err')}
 
-	resp := json.decode(Doujin, resp_raw.text) or {panic('Failed to decode json!: $err')}
+	//resp := json.decode(Doujin, resp_raw.text) or {panic('Failed to decode json!: $err')}
+	resp := json2.decode<Doujin>(resp_raw.text) or {
+		panic('Failed to decode json!: $err')
+	}
 
 	println('Doujin id: $resp.id')
-	println('Doujin name: ${resp.title["pretty"]} | $resp.pages pages')
+	println('Doujin name: ${resp.title["pretty"]} | ${resp.pages.as_map().len} pages')
 
 	return resp
 }
