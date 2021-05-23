@@ -1,11 +1,6 @@
 # nhentai-vlang
 NHentai downloader in vlang but with concurency
 
-## Disclaimer
-this shit doesnt have rate limiter so if you download something like 177013 <br/>
-which have 200 something pages, its gonna fail cuz 429'd. <br/>
-works really well tho if the pages is < 50 
-
 ## How to use
 * Compile the code if you havent with:
 ```
@@ -19,5 +14,12 @@ Example: nhentai 359959
 
 ## It accepts
 * code - i mean... you should know it
+
+## Tests
+```
+177013 [225 pages] - Downloading took: 27.5892s
+1 [14 pages] - Downloading took: 4.11473s
+69 [49 page] - Downloading took: 7.464s
+```
 
 
