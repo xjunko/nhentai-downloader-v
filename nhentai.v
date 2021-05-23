@@ -75,7 +75,7 @@ fn main() {
 	}	
 
 	// Check download folder
-	if !os.exists('download') {
+	if !os.exists('downloads') {
 		os.mkdir('downloads') or {
 			println('Failed to create download folder!: $err') 
 			// should never happen unless
