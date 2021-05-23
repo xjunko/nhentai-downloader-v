@@ -73,7 +73,6 @@ fn (mut d NHentai) from_code(code string) Doujin {
 		'${d.api_url}/${code}'
 		) or {panic('Request failed: $err')}
 
-	//resp := json.decode(Doujin, resp_raw.text) or {panic('Failed to decode json!: $err')}
 	resp := json2.decode<Doujin>(resp_raw.text) or {
 		panic('Failed to decode json!: $err')
 	}
