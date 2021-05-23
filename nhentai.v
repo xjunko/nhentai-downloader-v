@@ -52,11 +52,11 @@ fn (mut d Doujin) download_doujin() {
 	}
 
 	for i, task in threads {
-		println('Starting page #$i')
+		println('Starting page #${i+1}')
 		task.wait() or {
-			println('Page #$i failed: $err')
+			println('Page #${i+1} failed: $err')
 		}
-		println('Finished page #$i')
+		println('Finished page #${i+1}')
 	}
 
 }
