@@ -66,15 +66,21 @@ struct NHentai {
 	api_url string = 'https://nhentai.net/api/gallery'
 }
 
-fn (mut d NHentai) from_code(code string) Doujin {
+fn (mut d NHentai) from_code(code string) ?Doujin {
 	println('> Doujin code: ${code}')
 
-	resp_raw := http.get(
-		'${d.api_url}/${code}'
-		) or {panic('Request failed: $err')}
+	resp_raw := http.get('${d.api_url}/${code}') or {
+		println('Request failed: $err')
+		return err
+	}
+
+	if resp_raw.status_code != 200 {
+		return error('Failed to get doujin!: status_code != 200')
+	}
 
 	resp := json2.decode<Doujin>(resp_raw.text) or {
-		panic('Failed to decode json!: $err')
+		println('Failed to decode json!: $err')
+		return err
 	}
 
 	println('Doujin id: $resp.id')
@@ -105,7 +111,10 @@ fn main() {
 	}
 
 	code := args[1]
-	mut doujin := NHentai{}.from_code(code)
+	mut doujin := NHentai{}.from_code(code) or {
+		println(err)
+		return
+	}
 
 	// Download; very broken atm lol
 	doujin.download_doujin()
