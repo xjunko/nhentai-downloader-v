@@ -22,4 +22,5 @@ Example: nhentai 359959
 69 [49 page] - Downloading took: 7.464s
 ```
 
-
+## Why
+Im trying to learn [V](vlang.io/) and getting used to it hence why this exists
