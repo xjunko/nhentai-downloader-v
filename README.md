@@ -23,4 +23,4 @@ Example: nhentai 359959
 ```
 
 ## Why
-Im trying to learn [V](vlang.io/) and getting used to it hence why this exists
+Im trying to learn [V](https://vlang.io/) and getting used to it hence why this exists
