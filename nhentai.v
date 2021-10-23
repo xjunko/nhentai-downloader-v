@@ -35,7 +35,7 @@ fn download_loop(url string, path string, i int) {
 	}
 }
 
-fn (mut d Doujin) download_doujin() {
+fn (d Doujin) download_doujin() {
 	mut threads := []thread{}
 
 	// Check if doujin folder exists
@@ -74,7 +74,7 @@ struct NHentai {
 	api_url string = 'https://nhentai.net/api/gallery'
 }
 
-fn (mut d NHentai) from_code(code string) ?Doujin {
+fn (d NHentai) from_code(code string) ?Doujin {
 	println('> Doujin code: ${code}')
 
 	resp_raw := http.get('${d.api_url}/${code}') or {
@@ -119,12 +119,12 @@ fn main() {
 	}
 
 	code := args[1]
-	mut doujin := NHentai{}.from_code(code) or {
+	doujin := NHentai{}.from_code(code) or {
 		println('Failed to get Doujin: $err')
 		return
 	}
 
-	sw := time.new_stopwatch({})
+	sw := time.new_stopwatch()
 	// Download; very broken atm lol
 	doujin.download_doujin()
 	println('Downloading took: ${sw.elapsed().seconds()}s')
